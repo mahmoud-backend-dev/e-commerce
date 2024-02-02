@@ -47,7 +47,7 @@ const userSchema = new Schema(
       phone:String,
       city:String
     }],
-    forgetCode: String,
+    // forgetCode: String,
     isDeleted: {
       type: Boolean,
       default: false,
@@ -75,10 +75,10 @@ userSchema.pre("save", function() {
   if(this.password)
   this.password = bcryptjs.hashSync(this.password, +process.env.SALT);
 });
-userSchema.pre("findOneAndUpdate", function(){
-  if(this.__update.password)
-  this.__update.password = bcryptjs.hashSync(this.__update.password , process.env.SALT);
-});
+// userSchema.pre("findOneAndUpdate", function(){
+//   if(this._update.password)
+//   this._update.password = bcryptjs.hashSync(this._update.password , process.env.SALT);
+// });
 
 
 const User = model("user", userSchema);

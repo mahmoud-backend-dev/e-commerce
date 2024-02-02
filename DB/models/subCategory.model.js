@@ -21,6 +21,11 @@ const subCategorySchema = new Schema({
     type: Types.ObjectId,
     ref: "category",
   },
+  image:{
+    id:{type:String },
+    url:{type:String }
+
+  }
 }, { timestamps: true});
 
 const SubCategory = model("subCategory", subCategorySchema);

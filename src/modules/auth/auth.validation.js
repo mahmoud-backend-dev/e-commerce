@@ -6,18 +6,16 @@ const signUpVal = Joi.object({
     .email({
       maxDomainSegments: 2,
       tlds: { allow: ["com", "pro"] },
-    })
-    .lowercase()
-    .required(),
+    }).lowercase().required(),
   password: Joi.string().required(),
   confirmPassword: Joi.valid(Joi.ref("password")),
   age: Joi.number().min(10),
   role: Joi.string().valid("user", "admin"),
-}).required;
+}).required();
 
 const activeAccountVal = Joi.object({
-  token: Joi.string().required(),
-}).required;
+  emailToken: Joi.string().required(),
+}).required();
 
 const loginVal = Joi.object({
   email: Joi.string()
@@ -25,11 +23,9 @@ const loginVal = Joi.object({
       maxDomainSegments: 2,
       tlds: { allow: ["com", "pro"] },
     })
-    .lowercase()
-
-    .required(),
+    .lowercase().required(),
   password: Joi.string().required(),
-}).required;
+}).required();
 
 const forgetPassVal = Joi.object({
   email: Joi.string()
@@ -40,12 +36,12 @@ const forgetPassVal = Joi.object({
     .lowercase()
 
     .required(),
-}).required;
+}).required();
 
 const resetPassVal = Joi.object({
   password: Joi.string().required(),
   confirmPassword: Joi.valid(Joi.ref("password")),
   code: Joi.string().length(5).required(),
-}).required;
+}).required();
 
 export { signUpVal, activeAccountVal, loginVal, forgetPassVal, resetPassVal };

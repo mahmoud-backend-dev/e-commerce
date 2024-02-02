@@ -1,4 +1,3 @@
-import jwt from 'jsonwebtoken'
 import nodemailer from 'nodemailer'
 import { asyncHandler } from '../../middlewares/asyncHandler.js'
 

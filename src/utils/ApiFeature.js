@@ -1,11 +1,12 @@
 export class ApiFeature {
   constractor(mongoQuery, searchQuery) {
-    (this.mongoQuery = mongoQuery), (this.searchQuery = searchQuery);
+    this.mongoQuery = mongoQuery;
+    this.searchQuery = searchQuery;
   }
 
   pagination() {
-    if (this.searchQuery.page <= 0) this.searchQuery.page = 1;
-    let PAGE_NUMBER = this.searchQuery.page * 1 || 1; // if string(NAN || 1)
+    if (this.searchQuery?.page <= 0) this.searchQuery.page = 1;
+    let PAGE_NUMBER = this.searchQuery?.page * 1 || 1; // if string(NAN || 1)
     let PAGE_LIMIT = 3;
     let SKIP = (PAGE_NUMBER - 1) * PAGE_LIMIT;
     this.mongoQuery = this.mongoQuery.skip(SKIP).limit(PAGE_LIMIT);
@@ -27,7 +28,7 @@ export class ApiFeature {
   }
 
   sort() {
-    if (this.searchQuery.sort) {
+    if (this.searchQuery?.sort) {
       let sortBy = this.searchQuery.sort.split(",").join(" ");
       this.mongoQuery.sort(sortBy);
     }
@@ -35,7 +36,7 @@ export class ApiFeature {
   } // not sure
 
   fields() {
-    if (this.searchQuery.fields) {
+    if (this.searchQuery?.fields) {
       let selected = this.searchQuery.fields.split(",").join(" ");
       this.mongoQuery.selecte(selected);
     }
@@ -43,7 +44,7 @@ export class ApiFeature {
   }
 
   search() {
-    if (this.searchQuery.keyword) {
+    if (this.searchQuery?.keyword) {
       this.mongoQuery.find({
         $or: [
           { title: { $regex: this.searchQuery.keyword } },

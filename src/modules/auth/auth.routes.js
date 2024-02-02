@@ -7,7 +7,7 @@ const authRouter = Router();
 
 authRouter
   .post("/signUp", validation(authValidation.signUpVal), authController.signUp)
-  .post(
+  .get(
     "/acctivate_account/:emailToken",
     validation(authValidation.activeAccountVal),
     authController.activeAccount

@@ -13,7 +13,7 @@ const BrandSchema = new Schema({
     lowercase: true,
     required: true,
   },
-  logo:String,
+  logo:{id:String , url:String},
   createdBy: {
     type: Types.ObjectId,
     ref: "user",

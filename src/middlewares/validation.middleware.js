@@ -10,7 +10,7 @@ export const validation = (schema) => {
         ...req.params,
         ...req.query,
       };
-    }else if(req.files){
+    } else if (req.files) {
       filter = {
         ...req.files,
         ...req.body,
@@ -24,14 +24,14 @@ export const validation = (schema) => {
         ...req.query,
       };
     }
-    const { error } = schema.validate(filter, { abortEarly: false });
-    if (!error) next();
+    const validationResult = schema.validate(filter, { abortEarly: false });
+    if (!validationResult?.error) return next();
     else {
       let errorList = [];
-      error.details.forEach((ele) => {
+      validationResult.error.details.map((ele) => {
         errorList.push(ele.message);
       });
-      next(new Error("Errors is: ", errorList, { cause: 400 }));
+      return res.status(400).json({ message: "Errors is: ", errorList });
     }
   };
 };

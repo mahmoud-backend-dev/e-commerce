@@ -30,7 +30,7 @@ const updateUserVal = Joi.object({
   confirmPassword: Joi.valid(Joi.ref("password")),
   age: Joi.number().min(10),
   role: Joi.string().valid("user", "admin"),
-}).required;
+}).required();
 
 const paramsIdVal = Joi.object({
   id: Joi.string().hex().length(24).required(),

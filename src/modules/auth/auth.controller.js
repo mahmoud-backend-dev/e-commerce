@@ -1,7 +1,6 @@
-import Token from "../../../aya-othman/token.model.js";
 import User from "../../../DB/models/user.model.js";
 import { asyncHandler } from "../../middlewares/asyncHandler.js";
-import { htmlMail } from "../../services/emails/htmlTemplete.js";
+import { htmlCode, htmlMail } from "../../services/emails/htmlTemplete.js";
 import { sendEmail } from "../../services/emails/sendEmail.js";
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -9,18 +8,18 @@ import randomstring from "randomstring";
 
 const signUp = asyncHandler(async (req, res, next) => {
   //get data from req
-  const { email, username, password, confirmPassword } = req.body;
+  let { email, username, password, confirmPassword } = req.body;
   //check data
-  const isExisit = await new User.findOne({ email });
+  const isExisit = await User.findOne({ email });
   isExisit && next(new Error("User already exisit", { cause: 409 }));
   // if not exisit hash pass
-  password = bcryptjs.hashSync(password, +process.env.SALT);
+  //in user.model.js
   //generate token from email
-  const emailToken = jwt.sign({ email }, process.env.JWT_SECRET_KEY);
+  const emailToken = jwt.sign({ email  }, process.env.JWT_SECRET_KEY);
   // create user
   const user = await User.create({ ...req.body });
   // create confirmatiom link
-  const link = `${process.env.BASE_URL}/users/acctivate_account/${emailToken}`;
+  const link = `${process.env.BASE_URL}/api/v1/auth/acctivate_account/${emailToken}`;
   // send confirmation link
   await sendEmail({
     to: email,
@@ -28,12 +27,14 @@ const signUp = asyncHandler(async (req, res, next) => {
     html: htmlMail(link),
   });
   // send res
-  res.status(201).json({ message: "sign up successfuly", user });
+  res.status(201).json({ message: "sign up successfuly, Now check your email", 
+  user:user.username  });
 });
 
 const protectedRoute = asyncHandler(async (req, res, next) => {
   // get Token
   const { token } = req.headers;
+  //token exisit 401
   // verify token
   const payload = jwt.verify(token, process.env.JWT_SECRET_KEY);
   // check User by token.userId
@@ -54,7 +55,7 @@ const protectedRoute = asyncHandler(async (req, res, next) => {
 });
 const allowTo = (...roles) => {
   return asyncHandler(async (req, res, next) => {
-    if (roles.includes(req.user.role)) {
+    if (!roles.includes(req.user.role)) {
       return next(new Error("you are not authorized", { cause: 401 }));
     }
     next();
@@ -96,11 +97,11 @@ const logIn = asyncHandler(async (req, res, next) => {
     next(new Error("Incorrect Password", { cause: 400 }));
   }
   //generate token
-  const token = jwt.sign({ email, id: user._id }, process.env.JWT_SECRET_KEY);
-  //save token in token model
-  await Token.create({ token, user: user._id });
+  const token = jwt.sign({ email, userId: user._id,role:user.role }, process.env.JWT_SECRET_KEY);
+
   //send res
-  user && res.status(200).json({ message: "log in successfuly", user });
+  user && res.status(200).json({ message: "log in successfuly",
+   Token:token });
 });
 
 const forgetPass = asyncHandler(async (req, res) => {

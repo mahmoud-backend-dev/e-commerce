@@ -15,7 +15,7 @@ const addCategory = asyncHandler(async (req, res, next) => {
     { folder: `${process.env.CLOUD_FOLDER_NAME}/category` }
   );
   // req.body.image = req.file.filename;
-  const category = Category.create({
+  const category = await Category.create({
     name: req.body.name,
     slug: slugify(req.body.name),
     createdBy: req.user._id,
@@ -26,7 +26,7 @@ const addCategory = asyncHandler(async (req, res, next) => {
 });
 
 const allCategories = asyncHandler(async (req, res) => {
-  let apiFeature = new ApiFeature(Category.find({}), req.query)
+  let apiFeature = new ApiFeature( Category.find({}), req.query)
     .fields()
     .sort()
     .pagination()
@@ -46,7 +46,7 @@ const OneCategory = asyncHandler(async (req, res) => {
 const updateCategory = asyncHandler(async (req, res, next) => {
   //check category in db
   const isExisit = await Category.findOne({ name: req.body.name });
-  !isExisit && next(new Error("categort not found", { cause: 404 }));
+  !isExisit && next(new Error("category not found", { cause: 404 }));
   // check category owner
   if (isExisit.createdBy.toString() !== req.user._id.toString())
     return next(new Error("you are not Owner of category", { cause: 403 }));
@@ -54,12 +54,12 @@ const updateCategory = asyncHandler(async (req, res, next) => {
   if (req.file) {
     const { public_id, secure_url } =
       await cloudinaryConnection.uploader.upload(req.file.path, {
-        public_id: category.image.id,
+        public_id: isExisit.image.id,
       });
-    category.image = { id: public_id, url: secure_url };
+      isExisit.image = { id: public_id, url: secure_url };
   }
   //update category
-  if (req.body.name) req.body.slug = slugify(req.body.name);
+  if (req.body.Newname) req.body.slug = slugify(req.body.Newname);
   // if (req.file) (req.body.image = req), file.filename;
   const category = await Category.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
