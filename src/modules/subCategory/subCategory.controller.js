@@ -47,7 +47,7 @@ const allSubCategories = asyncHandler(async (req, res) => {
     .sort()
     .fields()
     .search(); // filtrobj.categroyId.tostring()
-  let subCategories = apiFeature.mongoQuery; 
+  let subCategories = await apiFeature.mongoQuery; 
   //.populate(JSON.stringify(filterObj.categoryId))
   // let subCategories = await SubCategory.find(filterObj).populate("category");
   res.status(200).json({ message: "All SubCategory", subCategories });
