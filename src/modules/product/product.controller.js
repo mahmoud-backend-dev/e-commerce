@@ -5,32 +5,56 @@ import { deleteOne } from "../handler/handler.js";
 import { ApiFeature } from "../../utils/ApiFeature.js";
 import Category from "../../../DB/models/category.model.js";
 import SubCategory from "../../../DB/models/subCategory.model.js";
+
 import Brand from "../../../DB/models/brand.model.js";
+import { nanoid } from "nanoid";
+import cloudinary from "../../services/fileUploads/cloudinary.js";
 
 const addProduct = asyncHandler(async (req, res, next) => {
-  const { categoryId, subcategoryId, brandId } = req.body;
+  const { categoryId, subcategoryId, brandId, title, description, price } =
+    req.body;
   // check category
-  const category = await Category.findById(categoryId);
+  const category = await Category.findById(req.body.categoryId);
   !category && next(new Error("category not found", { cause: 404 }));
   // check subcategory
-  const subCategory = await SubCategory.findById(subcategoryId);
+  const subCategory = await SubCategory.findById(req.body.subcategoryId);
   !subCategory && next(new Error("subCategory not found", { cause: 404 }));
   // check brands
-  const brand = await Brandd.findById(brandId);
+  const brand = await Brand.findById(req.body.brandId);
   !brand && next(new Error("brand not found", { cause: 404 }));
   // check files
-  if(!req.files) return  next(new Error("please add imgs for your product", { cause: 400 }));
-  // create folder name
-  const folder = 
-  // upload imgCover
+  if (!req.files)
+    return next(new Error("please add imgs for your product", { cause: 400 }));
+  // create unique folder name for each product
+  const cloudFolder = nanoid();
   // upload images
-  //
-  req.body.slug = slugify(req.body.title);
-  req.body.imgCover = req.files.imgCover[0].filename;
-  req.body.images = req.files.images.map((img) => img.filename);
-  let product = new Product(req.body);
-
-  await product.save();
+  let imgs = [];
+  for (const file of req.files.images) {
+    const { public_id, secure_url } = await cloudinary.uploader.upload(
+      file.path,
+      {
+        folder: `${process.env.CLOUD_FOLDER_NAME}/product/${cloudFolder}`,
+      }
+    );
+    imgs.push({ id: public_id, url: secure_url });
+  }
+  // upload imgCover
+  const { public_id, secure_url } = await cloudinary.uploader.upload(
+    req.files.imgCover[0].path,
+    {
+      folder: `${process.env.CLOUD_FOLDER_NAME}/product/${cloudFolder}`,
+    }
+  );
+  //creatr product
+  const product = await Product.create({
+    ...req.body,
+    cloudFolder,
+    createdBy: req.user._id,
+    slug: slugify(req.body.title),
+    images: imgs,
+    imgCover: { id: public_id, url: secure_url },
+  });
+  // req.body.slug = slugify(req.body.title);
 
   res.status(201).json({ message: "Product added successfuly", product });
 });
@@ -65,6 +89,18 @@ const updateProduct = asyncHandler(async (req, res) => {
   product && res.status(200).json({ message: "product updated", product });
 });
 
-const deleteProduct = deleteOne(Product);
+const deleteProduct = asyncHandler(async (req, res, next) => {
+  // check Product
+  const product = await Product.findById(req.params.id);
+  !product && res.status(404).json({ message: "product Not found" });
+  // check owner
+  if (req.user._id.toString() != product.createdBy.toString())
+    return next(new Error("you are not authorized", { cause: 401 }));
+
+  // delete product
+  await product.deleteOne();
+
+  res.status(200).json({ message: "product deleted", product });
+});
 
 export { addProduct, getAllProduct, OneProduct, deleteProduct, updateProduct };

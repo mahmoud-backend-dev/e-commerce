@@ -6,7 +6,6 @@ const addProductVal = Joi.object({
   description: Joi.string().min(5).max(100).required(),
   price: Joi.number().integer().min(0).required(),
   discount: Joi.number().integer().min(0).optional(),
-  avaliableItem: Joi.number().integer().min(1).optional(),
   quantity: Joi.number().integer().min(1).optional(),
 
   createdBy: Joi.string().custom(validateObjectId).optional(),

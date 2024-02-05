@@ -68,12 +68,23 @@ const updateCategory = asyncHandler(async (req, res, next) => {
   category && res.status(200).json({ message: "Category updated", category });
 });
 
-const deleteCategory = deleteOne(Category);
+const deleteCategory = asyncHandler(async (req, res, next) => {
+  // check Category
+  const category = await Category.findById(req.params.id);
+  !category && res.status(404).json({ message: "category Not found" });
+  // check owner
+  if (req.user._id.toString() !== category.createdBy.toString())
+    return next(new Error("you are not authorized to delete", { cause: 401 }));
+  // delete category
+  await category.deleteOne();
+  // doesnot send res ok , but deleted in mongodb
+  res.status(200).json({ message: "category deleted", category });
+});
 
 export {
   addCategory,
   allCategories,
-  deleteCategory,
+  deleteCategory,//1
   updateCategory,
   OneCategory,
 };

@@ -1,4 +1,5 @@
 import { Schema, Types, model } from "mongoose";
+import cloudinary from "../../src/services/fileUploads/cloudinary.js";
 
 const productSchema = new Schema(
   {
@@ -8,6 +9,11 @@ const productSchema = new Schema(
       trim: true,
       required: true,
       minLength: [2, "too short of Product title "],
+    },
+    slug: {
+      type: String,
+      lowercase: true,
+      required: true,
     },
     description: {
       type: String,
@@ -25,6 +31,11 @@ const productSchema = new Schema(
         url: { type: String, required: true },
       },
     ],
+    cloudFolder: {
+      type: String,
+      unique: true,
+      required: true,
+    },
     price: {
       type: Number,
       min: 0,
@@ -34,11 +45,6 @@ const productSchema = new Schema(
       type: Number,
       min: 1,
       max: 80,
-      required: true,
-    },
-    avaliableItem: {
-      type: Number,
-      min: 1,
       required: true,
     },
     quantity: {
@@ -59,11 +65,6 @@ const productSchema = new Schema(
       type: Number,
       min: 0,
       default: 0,
-    },
-    slug: {
-      type: String,
-      lowercase: true,
-      required: true,
     },
     createdBy: {
       type: Types.ObjectId,
@@ -96,6 +97,20 @@ const productSchema = new Schema(
 //     });
 // });
 // pupolate reviews that belongs to a product
+productSchema.post(
+  "deleteOne",
+  { document: true, query: false },
+  async function () {
+    // delete files
+    const ids = this.images.map((img) => img.id);
+    ids.push(this.imgCover.id);
+    await cloudinary.api.delete_resources(ids);
+    // delete folder (folder must be empty)
+    await cloudinary.api.delete_folder(
+      `${process.env.CLOUD_FOLDER_NAME}/product/${this.cloudFolder}`
+    );
+  }
+);
 productSchema.virtual("reviews", {
   ref: "review",
   foreignField: "productId",

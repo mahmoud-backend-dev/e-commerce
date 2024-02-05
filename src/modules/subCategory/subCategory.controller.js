@@ -38,7 +38,7 @@ const addSubCategory = asyncHandler(async (req, res, next) => {
 const allSubCategories = asyncHandler(async (req, res) => {
   let filterObj = {};
   if (req.params.category) {
-    filterObj.categoryId = req.params.category;
+    filterObj.categoryId = req.params.category; //{categoryId:req.params.category}
   }
   let apiFeature = new ApiFeature(SubCategory.find(filterObj), req.query)
 
@@ -47,9 +47,8 @@ const allSubCategories = asyncHandler(async (req, res) => {
     .sort()
     .fields()
     .search(); // filtrobj.categroyId.tostring()
-  let subCategories = apiFeature.mongoQuery.populate(
-    JSON.stringify(filterObj.categoryId)
-  );
+  let subCategories = apiFeature.mongoQuery; 
+  //.populate(JSON.stringify(filterObj.categoryId))
   // let subCategories = await SubCategory.find(filterObj).populate("category");
   res.status(200).json({ message: "All SubCategory", subCategories });
 }); // api feature with merge param

@@ -28,7 +28,7 @@ const userSchema = new Schema(
       type: String,
       required: true,
     },
-    changePassAt:Date,
+    changePassAt: Date,
     age: {
       type: Number,
       min: [10, "اكبر الاول بعدين نتفاهم"],
@@ -38,15 +38,19 @@ const userSchema = new Schema(
       enum: ["user", "admin"],
       default: "user",
     },
-    wishList:[{
-      type:Types.ObjectId,
-      ref:"product"
-    }],
-    addresses:[{
-      street:String,
-      phone:String,
-      city:String
-    }],
+    wishList: [
+      {
+        type: Types.ObjectId,
+        ref: "product",
+      },
+    ],
+    addresses: [
+      {
+        street: String,
+        phone: String,
+        city: String,
+      },
+    ],
     // forgetCode: String,
     isDeleted: {
       type: Boolean,
@@ -71,15 +75,14 @@ const userSchema = new Schema(
   },
   { timestamps: true }
 );
-userSchema.pre("save", function() {
-  if(this.password)
-  this.password = bcryptjs.hashSync(this.password, +process.env.SALT);
+userSchema.pre("save", function () {
+  if (this.isModified("password"))
+    this.password = bcryptjs.hashSync(this.password, +process.env.SALT);
 });
 // userSchema.pre("findOneAndUpdate", function(){
 //   if(this._update.password)
 //   this._update.password = bcryptjs.hashSync(this._update.password , process.env.SALT);
 // });
-
 
 const User = model("user", userSchema);
 export default User;

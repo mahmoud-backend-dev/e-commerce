@@ -1,4 +1,6 @@
 import mongoose, { Types } from "mongoose";
+import SubCategory from "./subCategory.model.js";
+import cloudinary from "../../src/services/fileUploads/cloudinary.js";
 
 const categorySchema = new mongoose.Schema(
   {
@@ -32,6 +34,18 @@ const categorySchema = new mongoose.Schema(
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
 
+categorySchema.post(
+  "deleteOne",
+  { document: true, query: false },
+  async function () {
+    // delete all related SubCategories
+    await SubCategory.deleteMany({
+      categoryId: this._id,
+    });
+  // delete image category from cloudnairy
+  await cloudinary.uploader.destroy(this.image.id)
+  }
+);
 // virtual subCategory field
 categorySchema.virtual("subCategory", {
   ref: "subCategory", //Model
@@ -41,6 +55,4 @@ categorySchema.virtual("subCategory", {
 const Category = mongoose.model("category", categorySchema);
 export default Category;
 
-// categorySchema.post("init", (doc) => {
-//   doc.image = process.env.BASE_URL + "uploads/" + doc.image;
-// });
+
