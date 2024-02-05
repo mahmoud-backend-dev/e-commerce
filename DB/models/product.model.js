@@ -13,26 +13,43 @@ const productSchema = new Schema(
       type: String,
       required: true,
       maxLength: 100,
-      minLength: [5, "too short of Product description "],
+      minLength: [10, "too short of Product description "],
     },
-    imgCover: String,
-    images: [],
+    imgCover: {
+      id: { type: String, required: true },
+      url: { type: String, required: true },
+    },
+    images: [
+      {
+        id: { type: String, required: true },
+        url: { type: String, required: true },
+      },
+    ],
     price: {
       type: Number,
       min: 0,
       required: true,
     },
-    priceAfterDiscount: {
+    discount: {
       type: Number,
-      min: 0,
+      min: 1,
+      max: 80,
+      required: true,
+    },
+    avaliableItem: {
+      type: Number,
+      min: 1,
       required: true,
     },
     quantity: {
       type: Number,
-      min: 0,
+      min: 1,
+      default: 1,
+    },
+    sold: {
+      type: Number,
       default: 0,
     },
-    sold: Number,
     rateAvg: {
       type: Number,
       min: 0,
@@ -68,24 +85,28 @@ const productSchema = new Schema(
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
 
-productSchema.post("init", (doc) => {
-  doc.imgCover = process.env.BASE_URL + "uploads/" + doc.imgCover;
+// productSchema.post("init", (doc) => {
+//   doc.imgCover = process.env.BASE_URL + "uploads/" + doc.imgCover;
 
-  doc.images =
-    process.env.BASE_URL +
-    "uploads/" +
-    doc.images.map((img) => {
-      process.env.BASE_URL + "uploads/" + img;
-    });
-});
+//   doc.images =
+//     process.env.BASE_URL +
+//     "uploads/" +
+//     doc.images.map((img) => {
+//       process.env.BASE_URL + "uploads/" + img;
+//     });
+// });
 // pupolate reviews that belongs to a product
 productSchema.virtual("reviews", {
   ref: "review",
   foreignField: "productId",
   localField: "_id",
 });
-productSchema.pre(/^find/,function(){ //['find','findOne'] it works with all or single
-  this.populate('reviews')
-})
+productSchema.pre(/^find/, function () {
+  //['find','findOne'] it works with all or single
+  this.populate("reviews");
+});
+productSchema.virtual("finalPrice").get(function () {
+  return Number.parseInt(this.price - (this.price * this.discount || 0) / 100);
+});
 const Product = model("product", productSchema);
 export default Product;

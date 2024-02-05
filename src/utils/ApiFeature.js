@@ -1,21 +1,22 @@
 export class ApiFeature {
-  constractor(mongoQuery, searchQuery) {
+  constructor(mongoQuery, data) {
     this.mongoQuery = mongoQuery;
-    this.searchQuery = searchQuery;
+    this.data = data;
   }
 
   pagination() {
-    if (this.searchQuery?.page <= 0) this.searchQuery.page = 1;
-    let PAGE_NUMBER = this.searchQuery?.page * 1 || 1; // if string(NAN || 1)
+    if (this.data?.page <= 0) this.data.page = 1;
+    let PAGE_NUMBER = this.data?.page * 1 || 1; // if string(NAN || 1)
     let PAGE_LIMIT = 3;
     let SKIP = (PAGE_NUMBER - 1) * PAGE_LIMIT;
+
     this.mongoQuery = this.mongoQuery.skip(SKIP).limit(PAGE_LIMIT);
 
     return this;
   }
 
   filter() {
-    let filterObj = { ...this.searchQuery };
+    let filterObj = { ...this.data };
     let execludedQuery = ["page", "sort", "fields", "filter"];
     execludedQuery.forEach((q) => {
       delete filterObj[q];
@@ -28,27 +29,27 @@ export class ApiFeature {
   }
 
   sort() {
-    if (this.searchQuery?.sort) {
-      let sortBy = this.searchQuery.sort.split(",").join(" ");
+    if (this.data?.sort) {
+      let sortBy = this.data.sort.split(",").join(" ");
       this.mongoQuery.sort(sortBy);
     }
     return this;
   } // not sure
 
   fields() {
-    if (this.searchQuery?.fields) {
-      let selected = this.searchQuery.fields.split(",").join(" ");
+    if (this.data?.fields) {
+      let selected = this.data.fields.split(",").join(" ");
       this.mongoQuery.selecte(selected);
     }
     return this;
   }
 
   search() {
-    if (this.searchQuery?.keyword) {
+    if (this.data?.keyword) {
       this.mongoQuery.find({
         $or: [
-          { title: { $regex: this.searchQuery.keyword } },
-          { description: { $regex: this.searchQuery.keyword } },
+          { title: { $regex: this.data.keyword } },
+          { description: { $regex: this.data.keyword } },
         ],
       });
     }

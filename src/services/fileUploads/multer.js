@@ -33,6 +33,6 @@ const fileUpload = () => {
 
 const uploadSingleFile = (fieldName) => fileUpload().single(fieldName);
 const uploadArrayOfFiles = (fieldName) => fileUpload().array(fieldName, 10);
-const uploadFiles = (fields) => fileUpload().array(fields);
+const uploadFiles = (fields) => fileUpload().fields(fields);
 
 export { uploadSingleFile, uploadArrayOfFiles, uploadFiles };

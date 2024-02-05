@@ -3,14 +3,14 @@ import slugify from "slugify";
 import { asyncHandler } from "../../middlewares/asyncHandler.js";
 import { deleteOne } from "../handler/handler.js";
 import { ApiFeature } from "../../utils/ApiFeature.js";
-import cloudinaryConnection from "../../services/fileUploads/cloudinary.js";
+import cloudinary from "../../services/fileUploads/cloudinary.js";
 const addCategory = asyncHandler(async (req, res, next) => {
   // req.body.slug = slugify(req.body.name);
   //check file
   if (!req.file)
     return next(new Error("category image is required", { cause: 400 }));
   //upload img in cloudinary
-  const { public_id, secure_url } = await cloudinaryConnection.uploader.upload(
+  const { public_id, secure_url } = await cloudinary.uploader.upload(
     req.file.path,
     { folder: `${process.env.CLOUD_FOLDER_NAME}/category` }
   );
@@ -26,12 +26,9 @@ const addCategory = asyncHandler(async (req, res, next) => {
 });
 
 const allCategories = asyncHandler(async (req, res) => {
-  let apiFeature = new ApiFeature( Category.find({}), req.query)
-    .fields()
-    .sort()
-    .pagination()
-    .filter()
-    .search();
+  console.log(req.query);
+  let apiFeature = new ApiFeature(Category.find({}), req.query).pagination();
+
   const categories = await apiFeature.mongoQuery;
   res.status(200).json({ message: "All Categories", categories });
 });
@@ -45,25 +42,28 @@ const OneCategory = asyncHandler(async (req, res) => {
 
 const updateCategory = asyncHandler(async (req, res, next) => {
   //check category in db
-  const isExisit = await Category.findOne({ name: req.body.name });
-  !isExisit && next(new Error("category not found", { cause: 404 }));
+  const category = await Category.findById(req.params.id);
+  !category && next(new Error("category name not found", { cause: 404 }));
   // check category owner
-  if (isExisit.createdBy.toString() !== req.user._id.toString())
+  if (category.createdBy.toString() !== req.user._id.toString())
     return next(new Error("you are not Owner of category", { cause: 403 }));
   //check file >> upload in cloudinary
   if (req.file) {
-    const { public_id, secure_url } =
-      await cloudinaryConnection.uploader.upload(req.file.path, {
-        public_id: isExisit.image.id,
-      });
-      isExisit.image = { id: public_id, url: secure_url };
+    const { public_id, secure_url } = await cloudinary.uploader.upload(
+      req.file.path,
+      {
+        public_id: category.image.id,
+      }
+    );
+    category.image = { id: public_id, url: secure_url };
   }
   //update category
-  if (req.body.Newname) req.body.slug = slugify(req.body.Newname);
-  // if (req.file) (req.body.image = req), file.filename;
-  const category = await Category.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-  });
+  category.slug = req.body.name ? slugify(req.body.name) : category.slug;
+  category.name = req.body.name ? req.body.name : category.name;
+
+  // if (req.body.name) category.slug = slugify(req.body.name);
+  await category.save();
+
   !category && res.status(404).json({ message: "Category Not found" });
   category && res.status(200).json({ message: "Category updated", category });
 });

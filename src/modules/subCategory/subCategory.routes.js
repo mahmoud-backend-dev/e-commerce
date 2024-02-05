@@ -22,10 +22,15 @@ SubCategoryRouter
   .route("/:id")
   .get(validation(JoiVal.paramsIdVal), SubCategoryController.OneSubCategory)
   .put(
+    protectedRoute,
+    allowTo('admin'),
+    uploadSingleFile("img-Subcategory"),
     validation(JoiVal.updateSubCategoryVal),
     SubCategoryController.updateSubCategory
   )
   .delete(
+    protectedRoute,
+    allowTo('admin'),
     validation(JoiVal.paramsIdVal),
     SubCategoryController.deleteSubCategory
   );

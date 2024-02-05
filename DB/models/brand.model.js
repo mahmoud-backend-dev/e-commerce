@@ -1,26 +1,32 @@
 import { Schema, Types, model } from "mongoose";
 
-const BrandSchema = new Schema({
-  name: {
-    type: String,
-    unique: [true, "Brand Name already Exisit "],
-    trim: true,
-    required: true,
-    minLength: [2, "too short of Brand Name "],
+const BrandSchema = new Schema(
+  {
+    name: {
+      type: String,
+      unique: [true, "Brand Name already Exisit "],
+      trim: true,
+      required: true,
+      minLength: [2, "too short of Brand Name "],
+    },
+    slug: {
+      type: String,
+      lowercase: true,
+      required: true,
+    },
+    logo: {
+      id: { type: String, required: true },
+      url: { type: String, required: true },
+    },
+    createdBy: {
+      type: Types.ObjectId,
+      ref: "user",
+    },
   },
-  slug: {
-    type: String,
-    lowercase: true,
-    required: true,
-  },
-  logo:{id:String , url:String},
-  createdBy: {
-    type: Types.ObjectId,
-    ref: "user",
-  }
-}, { timestamps: true});
-BrandSchema.post('init', (doc)=>{
-  doc.logo = process.env.BASE_URL +'uploads/' + doc.logo
-})
+  { timestamps: true }
+);
+// BrandSchema.post("init", (doc) => {
+//   doc.logo = process.env.BASE_URL + "uploads/" + doc.logo;
+// });
 const Brand = model("brand", BrandSchema);
 export default Brand;

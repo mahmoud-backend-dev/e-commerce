@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 
 const categorySchema = new mongoose.Schema(
   {
@@ -22,13 +22,25 @@ const categorySchema = new mongoose.Schema(
       type: mongoose.Types.ObjectId,
       ref: "user",
     },
+    brands: [
+      {
+        type: Types.ObjectId,
+        ref: "brand",
+      },
+    ],
   },
-  { timestamps: true }
+  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
 
-categorySchema.post("init", (doc) => {
-  doc.image = process.env.BASE_URL + "uploads/" + doc.image;
+// virtual subCategory field
+categorySchema.virtual("subCategory", {
+  ref: "subCategory", //Model
+  localField: "_id", // category
+  foreignField: "categoryId", //subCategory
 });
-
 const Category = mongoose.model("category", categorySchema);
 export default Category;
+
+// categorySchema.post("init", (doc) => {
+//   doc.image = process.env.BASE_URL + "uploads/" + doc.image;
+// });

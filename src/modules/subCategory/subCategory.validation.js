@@ -3,9 +3,8 @@ import { validateObjectId } from "../../middlewares/validation.middleware.js";
 
 const addSubCategoryVal = Joi.object({
   name: Joi.string().min(2).max(50).trim().required(),
-  categoryId: Joi.string().custom(validateObjectId).required(),
-  image: Joi.array().items(
-    Joi.object({
+  category: Joi.string().custom(validateObjectId).required(),
+  image: Joi.object({
       fieldname: Joi.string().required(),
       originalname: Joi.string().required(),
       encoding: Joi.string().required(),
@@ -14,19 +13,20 @@ const addSubCategoryVal = Joi.object({
       destination: Joi.string().required(),
       filename: Joi.string().required(),
       path: Joi.string().required(),
-    })
-  ).required()
+    }).required()
 });
 
 const paramsIdVal = Joi.object({
   id: Joi.string().custom(validateObjectId).required(),
+  category: Joi.string().custom(validateObjectId),
+
 });
 
 const updateSubCategoryVal = Joi.object({
   id: Joi.string().custom(validateObjectId).required(),
 
   name: Joi.string().min(2).max(50).trim(),
-  categoryId: Joi.string().hex().length(24),
+  category: Joi.string().custom(validateObjectId),
 });
 
 export { addSubCategoryVal, paramsIdVal, updateSubCategoryVal };

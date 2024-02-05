@@ -22,7 +22,6 @@ const paramsIdVal = Joi.object({
 
 const updateCategoryVal = Joi.object({
   name: Joi.string().min(2).max(50).trim(),
-  Newname: Joi.string().min(2).max(50).trim(),
   id: Joi.string().custom(validateObjectId).required(),
 
   image: Joi.object({
@@ -34,7 +33,7 @@ const updateCategoryVal = Joi.object({
       destination: Joi.string().required(),
       filename: Joi.string().required(),
       path: Joi.string().required(),
-    }),
+    }).optional(),
 });
 
 export { addCategoryVal, paramsIdVal, updateCategoryVal };

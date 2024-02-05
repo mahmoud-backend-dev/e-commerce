@@ -1,18 +1,24 @@
 import { Schema, Types, model } from "mongoose";
 
 const CouponSchema = new Schema({
-    code: {
+  code: {
       type: String,
       trim: true,
+      minLength:1,
+      maxLength: 8,
       required: true,
     },
-    discount: {
-      type: Number
+  discount: {
+      type: Number,
+      min:5,
+      max:80,
+      required:true
     },
-    expires:Date,
-    createdBy: {
+  expires:Date,
+  createdBy: {
       type:Types.ObjectId,
       ref: "user",
+      required:true
     }
 },
   { timestamps: true }

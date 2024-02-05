@@ -25,8 +25,12 @@ const subCategorySchema = new Schema({
     id:{type:String },
     url:{type:String }
 
-  }
-}, { timestamps: true});
+  },
+  brands: [{
+      type: Types.ObjectId,
+      ref: "brand",
+    }]
+  }, { timestamps: true});
 
 const SubCategory = model("subCategory", subCategorySchema);
 export default SubCategory;
